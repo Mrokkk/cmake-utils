@@ -9,6 +9,15 @@ function(add_coverage_flags)
 endfunction(add_coverage_flags)
 
 function(add_coverage_targets executable run-target prefix source-dir)
+    if (ARGV4)
+        set(exclude_string -e ${ARGV4})
+    endif()
+    if (ARGV5)
+        set(exclude_string ${exclude_string} -e ${ARGV5})
+    endif()
+    if (ARGV6)
+        set(exclude_string ${exclude_string} -e ${ARGV6})
+    endif()
     add_custom_target(clean-coverage
         COMMAND find ${CMAKE_BINARY_DIR} -name '*.gcda' -exec rm {} "\;"
         DEPENDS ${executable}
@@ -27,7 +36,7 @@ function(add_coverage_targets executable run-target prefix source-dir)
             DEPENDS ${run-target}
             COMMENT "Running GCOVR coverage generating")
         add_custom_target(${prefix}-cov-html
-            COMMAND gcovr --html --html-details -o ${prefix}-cov.html -r ${source-dir} ${CMAKE_BINARY_DIR}
+            COMMAND gcovr --html --html-details -o ${prefix}-cov.html ${exclude_string} -r ${source-dir} ${CMAKE_BINARY_DIR}
             DEPENDS ${run-target}
             COMMENT "Running GCOVR coverage generating (HTML)")
     endif()
