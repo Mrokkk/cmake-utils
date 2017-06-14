@@ -14,10 +14,9 @@ function(add_coverage_targets executable run-target prefix source-dir)
     endforeach()
     add_custom_target(clean-coverage
         COMMAND find ${CMAKE_BINARY_DIR} -name '*.gcda' -exec rm {} "\;"
-        DEPENDS ${executable}
         COMMENT "Cleaning coverage data")
-    add_dependencies(${prefix}-run clean-coverage)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        add_dependencies(${executable} clean-coverage)
         add_custom_target(tests-cov
             DEPENDS ${executable}
             COMMAND LLVM_PROFILE_FILE=tests.profdata ./${executable}
@@ -25,6 +24,7 @@ function(add_coverage_targets executable run-target prefix source-dir)
             COMMAND llvm-cov report ./${executable} -instr-profile=merged.profdata
             COMMENT "Running LLVM coverage generating")
     else()
+        add_dependencies(${executable} clean-coverage)
         add_custom_target(${prefix}-cov
             COMMAND gcovr -r ${source-dir} ${CMAKE_BINARY_DIR}
             DEPENDS ${run-target}
