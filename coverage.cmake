@@ -17,12 +17,18 @@ function(add_coverage_targets executable run-target prefix source-dir)
         COMMENT "Cleaning coverage data")
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         add_dependencies(${executable} clean-coverage)
-        add_custom_target(tests-cov
+        add_custom_target(llvm_coverage
             DEPENDS ${executable}
             COMMAND LLVM_PROFILE_FILE=tests.profdata ./${executable}
-            COMMAND llvm-profdata merge -instr tests.profdata -o merged.profdata
+            COMMAND llvm-profdata merge -instr tests.profdata -o merged.profdata)
+        add_custom_target(tests-cov
+            DEPENDS llvm_coverage
             COMMAND llvm-cov report ./${executable} -instr-profile=merged.profdata
             COMMENT "Running LLVM coverage generating")
+        add_custom_target(tests-cov-full
+            DEPENDS llvm_coverage
+            COMMAND llvm-cov show ./${executable} -instr-profile=merged.profdata -Xdemangler=llvm-cxxfilt
+            COMMENT "Running LLVM coverage generating (full)")
     else()
         add_dependencies(${executable} clean-coverage)
         add_custom_target(${prefix}-cov
